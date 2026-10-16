@@ -1,0 +1,106 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for Pendulum Arc.
+ */
+
+declare(strict_types=1);
+
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_install().
+ */
+function pendulum_arc_install(): void {
+  $role = Role::load('administrator');
+  if ($role && !$role->isAdmin() && !$role->hasPermission('administer pendulum arc')) {
+    $role->grantPermission('administer pendulum arc');
+    $role->save();
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function pendulum_arc_uninstall(): void {
+  \Drupal::state()->delete('pendulum_arc.connection');
+  \Drupal::state()->delete('pendulum_arc.consent');
+  \Drupal::keyValueExpirable('pendulum_arc')->deleteAll();
+  $schema = \Drupal::database()->schema();
+  if ($schema->tableExists('pendulum_arc_consent_log')) {
+    $schema->dropTable('pendulum_arc_consent_log');
+  }
+}
+
+/**
+ * Consent log. Settings live in state, not in this schema.
+ */
+function pendulum_arc_schema(): array {
+  return [
+    'pendulum_arc_consent_log' => [
+      'description' => 'Local cookie consent choices.',
+      'fields' => [
+        'id' => [
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'created_gmt' => [
+          'type' => 'varchar',
+          'length' => 20,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'consent_version' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ],
+        'action' => [
+          'type' => 'varchar',
+          'length' => 16,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'allowed' => [
+          'type' => 'text',
+          'not null' => TRUE,
+          'size' => 'big',
+        ],
+        'refused' => [
+          'type' => 'text',
+          'not null' => TRUE,
+          'size' => 'big',
+        ],
+        'ip' => [
+          'type' => 'varchar',
+          'length' => 45,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'user_agent' => [
+          'type' => 'varchar',
+          'length' => 500,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+      ],
+      'primary key' => ['id'],
+      'indexes' => [
+        'created_gmt' => ['created_gmt'],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Creates the consent log table on installs that predate the banner.
+ */
+function pendulum_arc_update_8001(): void {
+  $schema = \Drupal::database()->schema();
+  if (!$schema->tableExists('pendulum_arc_consent_log')) {
+    $schema->createTable('pendulum_arc_consent_log', pendulum_arc_schema()['pendulum_arc_consent_log']);
+  }
+}

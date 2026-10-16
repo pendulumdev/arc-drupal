@@ -1,0 +1,62 @@
+services:
+  pendulum_arc.config:
+    class: Drupal\pendulum_arc\ArcConfig
+    factory: ['Drupal\pendulum_arc\ArcConfig', 'fromSettings']
+  pendulum_arc.client:
+    class: Drupal\pendulum_arc\ArcClient
+    factory: ['Drupal\pendulum_arc\ArcClientFactory', 'create']
+    arguments: ['@http_client', '@pendulum_arc.config', '@request_stack']
+  pendulum_arc.store:
+    class: Drupal\pendulum_arc\ConnectionStore
+    factory: ['Drupal\pendulum_arc\ConnectionStoreFactory', 'create']
+    arguments: ['@state', '@keyvalue.expirable']
+  pendulum_arc.links:
+    class: Drupal\pendulum_arc\DrupalContentLinks
+    arguments: ['@path.validator', '@entity_type.manager', '@current_user', '@config.factory', '@request_stack']
+  pendulum_arc.profile:
+    class: Drupal\pendulum_arc\DrupalSiteProfile
+    arguments: ['@config.factory', '@request_stack']
+  pendulum_arc.lock:
+    class: Drupal\pendulum_arc\DrupalRefreshLock
+    arguments: ['@lock']
+  pendulum_arc.sleeper:
+    class: Drupal\pendulum_arc\DrupalSleeper
+  pendulum_arc.ids:
+    class: Drupal\pendulum_arc\DrupalIdGenerator
+    arguments: ['@uuid']
+  pendulum_arc.connect:
+    class: Drupal\pendulum_arc\ConnectService
+    arguments:
+      - '@pendulum_arc.store'
+      - '@pendulum_arc.client'
+      - '@pendulum_arc.config'
+      - '@pendulum_arc.profile'
+      - '@pendulum_arc.lock'
+      - '@pendulum_arc.sleeper'
+      - '@pendulum_arc.ids'
+      - '@pendulum_arc.links'
+  pendulum_arc.consent_store:
+    class: Drupal\pendulum_arc\ConsentStore
+    arguments:
+      - '@state'
+      - '@module_handler'
+      - '@cache.asset_chain'
+      - '@cache_tags.invalidator'
+      - '@?cache.page'
+      - '@?cache.dynamic_page_cache'
+  pendulum_arc.consent_log:
+    class: Drupal\pendulum_arc\ConsentLog
+    arguments: ['@database', '@flood']
+  pendulum_arc.consent_markup:
+    class: Drupal\pendulum_arc\ConsentMarkup
+  pendulum_arc.consent_front:
+    class: Drupal\pendulum_arc\ConsentFront
+    arguments:
+      - '@pendulum_arc.consent_store'
+      - '@pendulum_arc.consent_markup'
+      - '@request_stack'
+      - '@router.admin_context'
+      - '@library.discovery'
+      - '@theme.manager'
+      - '@file_url_generator'
+      - '@module_handler'

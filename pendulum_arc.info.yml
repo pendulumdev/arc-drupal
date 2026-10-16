@@ -1,0 +1,7 @@
+name: Arc Analytics
+type: module
+description: 'Connect this site to a Pendulum Arc account.'
+package: Pendulum
+core_version_requirement: ^11
+configure: pendulum_arc.connect
+version: 0.1.0

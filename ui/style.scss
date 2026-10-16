@@ -1,0 +1,243 @@
+@use "./styles/tokens";
+@use "./styles/button";
+@use "./styles/score-card";
+@use "./styles/meta";
+@use "./styles/field";
+@use "./styles/report";
+@use "./styles/consent";
+
+.pendulum-arc-intro {
+	margin-top: 16px;
+}
+
+.pendulum-arc-intro__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--arc-layout-gap);
+}
+
+.pendulum-arc-screen > .pendulum-arc-notice {
+	margin: 1.5rem 0 0;
+	border-radius: var(--arc-radius-medium);
+}
+
+.pendulum-arc-screen > .pendulum-arc-notice + .pendulum-arc-intro,
+.pendulum-arc-screen > .pendulum-arc-notice + .pendulum-arc-meta-grid,
+.pendulum-arc-screen > .pendulum-arc-notice + .pendulum-arc-connection,
+.pendulum-arc-screen > .arc-report-alert + .pendulum-arc-meta-grid,
+.pendulum-arc-screen > .arc-report-alert + .pendulum-arc-connection {
+	margin-top: 1.5rem;
+}
+
+.pendulum-arc-connection {
+	max-width: 36rem;
+	margin-top: 16px;
+}
+
+.pendulum-arc-meta-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+	align-items: stretch;
+	margin-top: 16px;
+}
+
+.pendulum-arc-meta-grid > .arc-meta {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.pendulum-arc-meta-grid > .arc-meta > .arc-meta__body {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+
+.pendulum-arc-meta-grid .arc-meta__body > .arc-button {
+	align-self: flex-start;
+}
+
+.pendulum-arc-modal .arc-report-alert {
+	margin: 0 0 1rem;
+}
+
+.pendulum-arc-modal .arc-report-alert + p {
+	margin-top: 0;
+}
+
+.pendulum-arc-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+.pendulum-arc-matches {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 8px;
+}
+
+.pendulum-arc-matches li {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.arc-page-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 9px 0 4px;
+}
+
+.wrap h1.arc-page-title {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	margin: 0;
+	padding: 0;
+}
+
+.arc-page-head__actions {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+}
+
+.arc-page-title__mark {
+	display: block;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 auto;
+}
+
+.pendulum-arc-dashboard-widget__body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.pendulum-arc-dashboard-widget .arc-scores,
+.pendulum-arc-dashboard-widget__note,
+.pendulum-arc-dashboard-widget__actions {
+	margin: 0;
+}
+
+.pendulum-arc-dashboard-widget__actions {
+	display: flex;
+}
+
+.pendulum-arc-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-inline-start: 4px solid #1d4ed8;
+  background: #eff6ff;
+}
+
+.pendulum-arc-notice--success {
+  border-inline-start-color: #047857;
+  background: #ecfdf5;
+}
+
+.pendulum-arc-notice__dismiss {
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pendulum-arc-notice--error {
+  border-inline-start-color: #b91c1c;
+  background: #fef2f2;
+}
+
+.pendulum-arc-notice--warning {
+  border-inline-start-color: #b45309;
+  background: #fffbeb;
+}
+
+.pendulum-arc-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: pendulum-arc-spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes pendulum-arc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pendulum-arc-field {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.pendulum-arc-field input,
+.pendulum-arc-field select {
+  width: 100%;
+  max-width: 36rem;
+  min-height: 40px;
+  padding: 6px 10px;
+}
+
+.pendulum-arc-field__help {
+  margin: 0.375rem 0 0;
+  color: var(--arc-fg-tertiary);
+  font-size: 0.75rem;
+}
+
+.pendulum-arc-field.arc-field--error .pendulum-arc-field__help {
+  color: var(--arc-accent-red);
+}
+
+.pendulum-arc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.pendulum-arc-dialog {
+  width: min(36rem, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.pendulum-arc-sodium {
+  margin-top: 16px;
+}
+
+@media (max-width: 782px) {
+	.pendulum-arc-meta-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.arc-meta__facts div {
+		grid-template-columns: 1fr;
+	}
+}

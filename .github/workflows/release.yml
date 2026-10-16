@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+          tools: composer
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      # The tag is the release. package.json, the info file, and composer.json
+      # must all say the same version.
+      - name: Check the tag matches the version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          info="$(awk '/^version:/ { print $2; exit }' pendulum_arc.info.yml)"
+          composer="$(node -p "require('./composer.json').version")"
+          libraries="$(awk '/^  version:/ { print $2 }' pendulum_arc.libraries.yml)"
+          fail=0
+          for name in pkg info composer; do
+            eval "value=\$$name"
+            if [ "$tag" != "$value" ]; then
+              echo "::error::$name is $value, tag is v$tag"
+              fail=1
+            fi
+          done
+          while read -r value; do
+            if [ -n "$value" ] && [ "$tag" != "$value" ]; then
+              echo "::error::libraries.yml is $value, tag is v$tag"
+              fail=1
+            fi
+          done <<< "$libraries"
+          if [ "$fail" -ne 0 ]; then
+            exit 1
+          fi
+          echo "tag v$tag matches package.json, info.yml, and composer.json"
+
+      - name: PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHP tests
+        run: composer test
+
+      - name: PHPCS
+        run: composer lint
+
+      - name: JavaScript dependencies
+        run: npm ci
+
+      - name: JavaScript tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Drupal installs the zip over modules/custom/pendulum_arc or
+      # modules/contrib/pendulum_arc. export-ignore drops the dev tree.
+      # The built admin UI in js/build stays in the archive.
+      - name: Pack the module
+        run: |
+          rm -rf pack pendulum_arc.zip
+          mkdir pack
+          git archive --format=tar --prefix=pendulum_arc/ HEAD | tar -x -C pack
+          rm -rf pack/pendulum_arc/js/build
+          cp -R js/build pack/pendulum_arc/js/build
+          (cd pack && zip -r ../pendulum_arc.zip pendulum_arc -x "*.DS_Store")
+
+      # Body comes from docs/releases/vX.Y.Z.md so every tag uses the same
+      # headed format. --generate-notes is not a fallback.
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="docs/releases/${GITHUB_REF_NAME}.md"
+          if [ ! -f "$notes" ]; then
+            echo "::error::missing $notes - write it from docs/releasing.md"
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" pendulum_arc.zip \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file "$notes" \
+            --verify-tag

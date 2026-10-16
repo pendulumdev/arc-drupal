@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<ruleset name="pendulum_arc">
+  <description>Drupal coding standards for Pendulum Arc.</description>
+  <file>src</file>
+  <file>tests</file>
+  <file>pendulum_arc.module</file>
+  <file>pendulum_arc.install</file>
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
+  <exclude-pattern>*/web/*</exclude-pattern>
+  <exclude-pattern>*/js/build/*</exclude-pattern>
+
+  <rule ref="Drupal">
+    <exclude name="Drupal.Commenting.FunctionComment.Missing"/>
+    <exclude name="Drupal.Commenting.FunctionComment.MissingParamComment"/>
+    <exclude name="Drupal.Commenting.FunctionComment.ParamMissingDefinition"/>
+    <exclude name="Drupal.Commenting.FunctionComment.MissingReturnComment"/>
+    <exclude name="Drupal.Commenting.FunctionComment.ParamCommentNotCapital"/>
+    <exclude name="Drupal.Commenting.FunctionComment.ThrowsComment"/>
+    <exclude name="Drupal.Commenting.DocComment.MissingShort"/>
+    <exclude name="Drupal.Commenting.DocComment.ShortSingleLine"/>
+    <exclude name="Drupal.Commenting.ClassComment.Missing"/>
+    <exclude name="Drupal.Commenting.FileComment.Missing"/>
+    <exclude name="Drupal.Commenting.VariableComment.Missing"/>
+    <exclude name="Drupal.Files.LineLength.TooLong"/>
+  </rule>
+  <rule ref="DrupalPractice">
+    <exclude name="DrupalPractice.Commenting.CommentEmptyLine.SpacingAfter"/>
+  </rule>
+
+  <!-- Rule classes keep the WordPress plugin method names so the port stays testable. -->
+  <rule ref="Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps">
+    <exclude-pattern>*/src/Rules/*</exclude-pattern>
+  </rule>
+  <rule ref="Drupal.Arrays.Array.LongLineDeclaration">
+    <exclude-pattern>*/src/Rules/*</exclude-pattern>
+  </rule>
+</ruleset>

@@ -1,0 +1,29 @@
+pendulum_arc.dashboard:
+  title: Arc Analytics
+  description: 'Arc Analytics scores and reports for this site.'
+  route_name: pendulum_arc.dashboard
+  parent: system.admin
+  weight: 58
+  options:
+    attributes:
+      class:
+        - toolbar-icon-pendulum-arc-dashboard
+
+pendulum_arc.dashboard_tab:
+  title: Dashboard
+  route_name: pendulum_arc.dashboard
+  parent: pendulum_arc.dashboard
+  weight: 0
+
+pendulum_arc.connect:
+  title: Connect
+  route_name: pendulum_arc.connect
+  parent: pendulum_arc.dashboard
+  weight: 10
+
+pendulum_arc.consent:
+  title: GDPR Consent
+  description: 'Local cookie banner for this site.'
+  route_name: pendulum_arc.consent
+  parent: pendulum_arc.dashboard
+  weight: 20

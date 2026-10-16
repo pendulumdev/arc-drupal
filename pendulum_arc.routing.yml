@@ -1,0 +1,204 @@
+pendulum_arc.dashboard:
+  path: /admin/pendulum-arc
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\PageController::dashboard
+    _title: 'Arc Analytics - Dashboard'
+  requirements:
+    _permission: 'administer pendulum arc'
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.connect:
+  path: /admin/pendulum-arc/connect
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\PageController::connect
+    _title: 'Arc Analytics - Connect'
+  requirements:
+    _permission: 'administer pendulum arc'
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.connect_api_key:
+  path: /admin/pendulum-arc/connect/api-key
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::apiKey
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.connect_reconnect:
+  path: /admin/pendulum-arc/connect/reconnect
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::reconnect
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.connect_oauth_start:
+  path: /admin/pendulum-arc/connect/oauth/start
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::oauthStart
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.connect_pair:
+  path: /admin/pendulum-arc/connect/pair
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::pair
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.connect_site:
+  path: /admin/pendulum-arc/connect/site
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::createSite
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.connection:
+  path: /admin/pendulum-arc/connection
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::disconnect
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [DELETE]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.scores:
+  path: /admin/pendulum-arc/scores
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::scores
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [GET]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.analytics:
+  path: /admin/pendulum-arc/analytics
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::analytics
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [GET]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.report:
+  path: '/admin/pendulum-arc/reports/{service}'
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::report
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+    service: 'seo|a11y|ai|security|brand'
+  methods: [GET]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.consent:
+  path: /admin/pendulum-arc/consent
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\ConsentController::page
+    _title: 'Arc Analytics - GDPR Consent'
+  requirements:
+    _permission: 'administer pendulum arc'
+  methods: [GET]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.consent_save:
+  path: /admin/pendulum-arc/consent
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\ConsentController::save
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.consent_renew:
+  path: /admin/pendulum-arc/consent/renew
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\ConsentController::renew
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.consent_reset:
+  path: /admin/pendulum-arc/consent/reset
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\ConsentController::reset
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.consent_styles_reset:
+  path: /admin/pendulum-arc/consent/styles/reset
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\ConsentController::resetStyles
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.consent_icon:
+  path: /admin/pendulum-arc/consent/icon
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\ConsentController::uploadIcon
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.consent_log:
+  path: /pendulum-arc/consent/log
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\ConsentController::log
+  requirements:
+    _access: 'TRUE'
+  methods: [POST]
+
+pendulum_arc.runs:
+  path: /admin/pendulum-arc/runs
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::runsCollection
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [GET, POST]
+  options:
+    _admin_route: TRUE

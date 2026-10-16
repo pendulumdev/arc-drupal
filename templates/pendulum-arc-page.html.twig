@@ -1,0 +1,13 @@
+<div class="pendulum-arc-wrap">
+  <div class="arc-page-head">
+    <h1 class="arc-page-title">
+      <img class="arc-page-title__mark" src="{{ mark }}" alt="" width="28" height="28" />
+      {{ title }}
+    </h1>
+    <div id="pendulum-arc-title-actions" class="arc-page-head__actions"></div>
+  </div>
+  <div id="pendulum-arc-root" data-bootstrap="{{ bootstrap|e('html_attr') }}"></div>
+  {% if message %}
+    <p class="pendulum-arc-sodium">{{ message }}</p>
+  {% endif %}
+</div>

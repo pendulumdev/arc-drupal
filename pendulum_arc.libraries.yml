@@ -1,0 +1,16 @@
+admin:
+  version: 0.1.0
+  css:
+    theme:
+      js/build/app.css: {}
+  js:
+    js/build/app.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+
+menu:
+  version: 0.1.0
+  css:
+    theme:
+      css/menu.css: {}

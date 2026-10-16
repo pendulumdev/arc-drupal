@@ -1,0 +1,32 @@
+{
+  "name": "arc-drupal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Connect a Drupal site to a Pendulum Arc account.",
+  "author": "Pendulum Development Ltd",
+  "license": "GPL-2.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pendulumdev/arc-drupal.git"
+  },
+  "homepage": "https://github.com/pendulumdev/arc-drupal#readme",
+  "bugs": {
+    "url": "https://github.com/pendulumdev/arc-drupal/issues"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "hooks": "git config core.hooksPath .githooks"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "sass": "^1.89.0",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  }
+}

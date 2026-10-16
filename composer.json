@@ -1,0 +1,54 @@
+{
+  "name": "drupal/pendulum_arc",
+  "description": "Connect a Drupal site to a Pendulum Arc account.",
+  "version": "0.1.0",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=8.3",
+    "ext-sodium": "*",
+    "drupal/core": "^11"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "drupal/coder": "^8.3",
+    "drush/drush": "^13",
+    "phpunit/phpunit": "^10.5 || ^11"
+  },
+  "autoload": {
+    "psr-4": {
+      "Drupal\\pendulum_arc\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Drupal\\Tests\\pendulum_arc\\Unit\\": "tests/src/Unit/"
+    }
+  },
+  "config": {
+    "allow-plugins": true,
+    "preferred-install": {
+      "drupal/core": "dist"
+    },
+    "sort-packages": true,
+    "platform": {
+      "php": "8.3.30"
+    }
+  },
+  "scripts": {
+    "lint": "phpcs",
+    "test": "phpunit --testsuite unit"
+  },
+  "extra": {
+    "drupal-scaffold": {
+      "file-mapping": {
+        "[project-root]/.editorconfig": false,
+        "[project-root]/.gitattributes": false,
+        "[project-root]/recipes/README.txt": false
+      },
+      "locations": {
+        "web-root": "web/"
+      }
+    }
+  }
+}

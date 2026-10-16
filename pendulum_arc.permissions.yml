@@ -1,0 +1,4 @@
+administer pendulum arc:
+  title: 'Administer Arc Analytics'
+  description: 'Connect this site to Arc and view scores and report previews.'
+  restrict access: true

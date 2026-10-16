@@ -7,7 +7,7 @@ namespace Drupal\pendulum_arc;
 /**
  * Arc HTTP calls used by the connect flow.
  */
-interface ArcGateway {
+interface ArcGatewayInterface {
 
   /**
    * @return array<string, mixed>

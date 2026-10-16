@@ -17,13 +17,13 @@ final class ConnectService {
 
   public function __construct(
     private readonly ConnectionStoreInterface $store,
-    private readonly ArcGateway $client,
+    private readonly ArcGatewayInterface $client,
     private readonly ArcConfig $config,
-    private readonly SiteProfile $profile,
-    private readonly RefreshLock $lock,
-    private readonly Sleeper $sleeper,
-    private readonly IdGenerator $ids,
-    private readonly ContentLinker $links,
+    private readonly SiteProfileInterface $profile,
+    private readonly RefreshLockInterface $lock,
+    private readonly SleeperInterface $sleeper,
+    private readonly IdGeneratorInterface $ids,
+    private readonly ContentLinkerInterface $links,
   ) {}
 
   /**

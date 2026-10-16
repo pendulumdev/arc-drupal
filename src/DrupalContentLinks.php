@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Resolves an on-site path to a view URL and an edit URL.
  */
-final class DrupalContentLinks implements ContentLinker {
+final class DrupalContentLinks implements ContentLinkerInterface {
 
   public function __construct(
     private readonly PathValidatorInterface $paths,

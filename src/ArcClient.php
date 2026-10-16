@@ -11,7 +11,7 @@ use GuzzleHttp\Exception\GuzzleException;
 /**
  * Bearer calls and the OAuth token exchange.
  */
-final class ArcClient implements ArcGateway {
+final class ArcClient implements ArcGatewayInterface {
 
   public function __construct(
     private readonly ClientInterface $http,

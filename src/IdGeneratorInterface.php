@@ -7,7 +7,7 @@ namespace Drupal\pendulum_arc;
 /**
  * Opaque id for an idempotency key.
  */
-interface IdGenerator {
+interface IdGeneratorInterface {
 
   public function generate(): string;
 

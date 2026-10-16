@@ -7,7 +7,7 @@ namespace Drupal\pendulum_arc;
 /**
  * Single-flight lock around an OAuth refresh.
  */
-interface RefreshLock {
+interface RefreshLockInterface {
 
   public function claim(): bool;
 

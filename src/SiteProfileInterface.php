@@ -7,7 +7,7 @@ namespace Drupal\pendulum_arc;
 /**
  * This install's home URL and site name.
  */
-interface SiteProfile {
+interface SiteProfileInterface {
 
   /**
    * @return array{origin: string, name: string}

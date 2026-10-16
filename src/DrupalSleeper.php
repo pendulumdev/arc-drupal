@@ -7,7 +7,7 @@ namespace Drupal\pendulum_arc;
 /**
  * Waits 200ms between refresh polls.
  */
-final class DrupalSleeper implements Sleeper {
+final class DrupalSleeper implements SleeperInterface {
 
   public function pause(): void {
     usleep(200000);

@@ -7,7 +7,7 @@ namespace Drupal\pendulum_arc;
 /**
  * Pause between refresh-lock polls.
  */
-interface Sleeper {
+interface SleeperInterface {
 
   public function pause(): void;
 

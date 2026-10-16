@@ -6,14 +6,14 @@ namespace Drupal\Tests\pendulum_arc\Unit;
 
 use Drupal\pendulum_arc\ArcApiException;
 use Drupal\pendulum_arc\ArcConfig;
-use Drupal\pendulum_arc\ArcGateway;
+use Drupal\pendulum_arc\ArcGatewayInterface;
 use Drupal\pendulum_arc\ConnectService;
 use Drupal\pendulum_arc\ConnectionStoreInterface;
-use Drupal\pendulum_arc\ContentLinker;
-use Drupal\pendulum_arc\IdGenerator;
-use Drupal\pendulum_arc\RefreshLock;
-use Drupal\pendulum_arc\SiteProfile;
-use Drupal\pendulum_arc\Sleeper;
+use Drupal\pendulum_arc\ContentLinkerInterface;
+use Drupal\pendulum_arc\IdGeneratorInterface;
+use Drupal\pendulum_arc\RefreshLockInterface;
+use Drupal\pendulum_arc\SiteProfileInterface;
+use Drupal\pendulum_arc\SleeperInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -135,12 +135,12 @@ final class ConnectFlowTest extends TestCase {
     self::assertSame('arc_live_example_secret', $creds['accessToken']);
   }
 
-  private function service(ConnectionStoreInterface $store, ArcGateway $client, RefreshLock $lock, ?callable $onPause = NULL): ConnectService {
+  private function service(ConnectionStoreInterface $store, ArcGatewayInterface $client, RefreshLockInterface $lock, ?callable $onPause = NULL): ConnectService {
     return new ConnectService(
       $store,
       $client,
       new ArcConfig('production', ArcConfig::CLIENT_ID, NULL, NULL, FALSE, FALSE),
-      new class implements SiteProfile {
+      new class implements SiteProfileInterface {
 
         public function get(): array {
           return ['origin' => 'https://example.com/', 'name' => 'Example'];
@@ -148,7 +148,7 @@ final class ConnectFlowTest extends TestCase {
 
       },
       $lock,
-      new class($onPause) implements Sleeper {
+      new class($onPause) implements SleeperInterface {
 
         public function __construct(private $onPause) {}
 
@@ -159,14 +159,14 @@ final class ConnectFlowTest extends TestCase {
         }
 
       },
-      new class implements IdGenerator {
+      new class implements IdGeneratorInterface {
 
         public function generate(): string {
           return 'idempotency-key-1';
         }
 
       },
-      new class implements ContentLinker {
+      new class implements ContentLinkerInterface {
 
         public function linkReportBlocks(array $blocks): array {
           return $blocks;
@@ -283,7 +283,7 @@ final class MemoryStore implements ConnectionStoreInterface {
 /**
  * Scores fail once for the old token, then succeed.
  */
-final class FakeGateway implements ArcGateway {
+final class FakeGateway implements ArcGatewayInterface {
 
   /**
    * @var array<int, string> */
@@ -375,7 +375,7 @@ final class FakeGateway implements ArcGateway {
 /**
  * A lock that is either free or already held.
  */
-final class MemoryLock implements RefreshLock {
+final class MemoryLock implements RefreshLockInterface {
 
   public function __construct(private readonly bool $free) {}
 

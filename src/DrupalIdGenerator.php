@@ -9,7 +9,7 @@ use Drupal\Component\Uuid\UuidInterface;
 /**
  * Drupal UUID service as an idempotency key source.
  */
-final class DrupalIdGenerator implements IdGenerator {
+final class DrupalIdGenerator implements IdGeneratorInterface {
 
   public function __construct(
     private readonly UuidInterface $uuid,

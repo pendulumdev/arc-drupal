@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Site name and absolute front URL for the authorize request.
  */
-final class DrupalSiteProfile implements SiteProfile {
+final class DrupalSiteProfile implements SiteProfileInterface {
 
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,

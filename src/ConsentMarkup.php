@@ -109,10 +109,10 @@ final class ConsentMarkup {
   /**
    * Accept, decline, or read-more control.
    *
-   * @param array<string, mixed> $settings
-   *   Settings.
    * @param string $action
    *   accept, decline, or read-more.
+   * @param array<string, mixed> $settings
+   *   Settings.
    * @param string $label
    *   Button label. Empty uses the saved label.
    * @param string $colour

@@ -49,7 +49,7 @@ final class ConsentRulesTest extends TestCase {
     self::assertSame([], $settings['cookies']);
   }
 
-  public function testSanitizeKeepsACookieAndDropsBadValues(): void {
+  public function testSanitizeKeepsOneCookieAndDropsBadValues(): void {
     $clean = ConsentSettings::sanitize(
       [
         'title' => '  Hello <b>there</b>  ',
@@ -209,7 +209,7 @@ final class ConsentRulesTest extends TestCase {
     self::assertSame('footer', ConsentSettings::print_slot($settings));
   }
 
-  public function testASitePathIsKeptAsTheReadMoreLink(): void {
+  public function testSitePathIsKeptAsTheReadMoreLink(): void {
     $clean = ConsentSettings::sanitize(
       ['read_more_url' => '/privacy'],
       ''
@@ -245,7 +245,7 @@ final class ConsentRulesTest extends TestCase {
     self::assertSame('fresh', $reset['custom_css']);
   }
 
-  public function testRemovingACatalogRowDismissesItUntilItReturns(): void {
+  public function testRemovingOneCatalogRowDismissesItUntilItReturns(): void {
     $previous = [
       ['catalog_id' => 'ga'],
       ['catalog_id' => 'gid'],
@@ -274,7 +274,7 @@ final class ConsentRulesTest extends TestCase {
     );
     self::assertSame(
       ['drupal_session'],
-      ConsentCatalog::matching_ids(['SESS' . 'example'], [])
+      ConsentCatalog::matching_ids(['SESSexample'], [])
     );
     self::assertSame(
       ['ga'],
@@ -298,7 +298,7 @@ final class ConsentRulesTest extends TestCase {
     );
   }
 
-  public function testALibraryIdIsNotTreatedAsAUrl(): void {
+  public function testLibraryIdentifierIsNotTreatedAsUrl(): void {
     self::assertTrue(ConsentScripts::is_library_id('google_tag/gtag'));
     self::assertFalse(ConsentScripts::is_library_id('https://www.googletagmanager.com/gtag/js'));
     self::assertFalse(ConsentScripts::is_library_id('/core/misc/drupal.js'));
@@ -375,7 +375,7 @@ final class ConsentRulesTest extends TestCase {
     );
   }
 
-  public function testARequiredMatchWinsOverAnOptionalMatch(): void {
+  public function testRequiredMatchWinsOverAnOptionalMatch(): void {
     $cookies = [
       [
         'id' => 'cat_ga',

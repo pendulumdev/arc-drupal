@@ -9,7 +9,7 @@ use Drupal\Core\Lock\LockBackendInterface;
 /**
  * Drupal lock backend for the refresh rotation.
  */
-final class DrupalRefreshLock implements RefreshLock {
+final class DrupalRefreshLock implements RefreshLockInterface {
 
   private const NAME = 'pendulum_arc_oauth_refresh';
 

@@ -7,7 +7,7 @@ namespace Drupal\pendulum_arc;
 /**
  * Adds view and edit URLs for paths on this site.
  */
-interface ContentLinker {
+interface ContentLinkerInterface {
 
   /**
    * @param array<int, array<string, mixed>> $blocks

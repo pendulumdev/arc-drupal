@@ -1,0 +1,17 @@
+pendulum_arc.dashboard_tab:
+  title: Dashboard
+  route_name: pendulum_arc.dashboard
+  base_route: pendulum_arc.dashboard
+  weight: 0
+
+pendulum_arc.consent_tab:
+  title: GDPR Consent
+  route_name: pendulum_arc.consent
+  base_route: pendulum_arc.dashboard
+  weight: 10
+
+pendulum_arc.connect_tab:
+  title: Connect
+  route_name: pendulum_arc.connect
+  base_route: pendulum_arc.dashboard
+  weight: 20

@@ -1,15 +1,11 @@
 /**
- * Toolbar mark. Uses the admin icon color.
+ * Toolbar mark. Core adds .toolbar-icon and
+ * .toolbar-icon-pendulum-arc-dashboard, and paints ::before in the
+ * same slot as Content and Structure.
  */
-.toolbar-icon-pendulum-arc-dashboard::before {
-  background-image: none !important;
-  background-color: currentColor;
-  -webkit-mask-image: url(../assets/arc-mark.svg);
-  mask-image: url(../assets/arc-mark.svg);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: 16px 16px;
-  mask-size: 16px 16px;
+.toolbar .toolbar-icon-pendulum-arc-dashboard::before {
+  background-image: url(../assets/arc-mark-color.svg) !important;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 16px 16px;
 }

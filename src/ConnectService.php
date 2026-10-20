@@ -176,7 +176,7 @@ final class ConnectService {
       'response_type' => 'code',
       'client_id' => $this->config->clientId(),
       'redirect_uri' => $redirectUri,
-      'scope' => 'arc:read arc:enqueue',
+      'scope' => 'arc:read arc:enqueue arc:invite',
       'state' => $state,
       'code_challenge' => Pkce::challenge($verifier),
       'code_challenge_method' => 'S256',

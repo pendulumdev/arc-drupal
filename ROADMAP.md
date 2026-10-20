@@ -29,9 +29,10 @@ sites page. It calls `POST /admin/pendulum-arc/runs`, which queues one
 service through `POST /v1/sites/{siteId}/runs` with a fresh idempotency key.
 Run all queues each service that is not already queued or running.
 
-OAuth connect requests `arc:read arc:enqueue`. A site connected before that
-scope must reconnect before Generate is allowed. API-key connects already
-include enqueue.
+OAuth connect requests `arc:read arc:enqueue arc:invite`. A site connected
+before enqueue must reconnect before Generate is allowed. A site connected
+before invite must reconnect before Arc can invite a project member. API-key
+connects already include enqueue when the key was created with that capability.
 
 The menu reads `GET /v1/sites/{siteId}/runs` when the notice opens, then
 once a minute while any service is queued or running. When a service leaves

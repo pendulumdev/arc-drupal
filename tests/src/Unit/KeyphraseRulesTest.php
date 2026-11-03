@@ -90,6 +90,26 @@ final class KeyphraseRulesTest extends TestCase {
     self::assertCount(1, $replace['upserts']);
     self::assertTrue($replace['send_focus']);
     self::assertSame('widgets', $replace['focus']);
+    self::assertFalse(KeyphrasePush::vacant($replace));
+  }
+
+  public function testEmptyReplaceIsVacant(): void {
+    $plan = KeyphrasePush::plan('old', 'moved', '', '', []);
+    self::assertSame('replace', $plan['mode']);
+    self::assertSame([], $plan['upserts']);
+    self::assertNull($plan['focus']);
+    self::assertTrue(KeyphrasePush::vacant($plan));
+
+    $pages = KeyphrasePush::plan('old', 'moved', '', '', [
+      [
+        'path' => '/about',
+        'phrase' => 'about',
+        'synced_phrase' => '',
+        'deleted' => FALSE,
+      ],
+    ]);
+    self::assertFalse(KeyphrasePush::vacant($pages));
+    self::assertCount(1, $pages['upserts']);
   }
 
   public function testCursorAdvancesByEntityType(): void {

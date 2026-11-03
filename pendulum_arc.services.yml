@@ -24,6 +24,9 @@ services:
   pendulum_arc.ids:
     class: Drupal\pendulum_arc\DrupalIdGenerator
     arguments: ['@uuid']
+  pendulum_arc.shots:
+    class: Drupal\pendulum_arc\DrupalReportShots
+    arguments: ['@file_system']
   pendulum_arc.connect:
     class: Drupal\pendulum_arc\ConnectService
     arguments:
@@ -36,6 +39,7 @@ services:
       - '@pendulum_arc.ids'
       - '@pendulum_arc.links'
       - '@pendulum_arc.google'
+      - '@pendulum_arc.shots'
   pendulum_arc.google:
     class: Drupal\pendulum_arc\GoogleConnection
     arguments: ['@state']

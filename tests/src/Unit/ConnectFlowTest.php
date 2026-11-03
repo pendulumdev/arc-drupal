@@ -9,6 +9,7 @@ use Drupal\pendulum_arc\ArcConfig;
 use Drupal\pendulum_arc\ArcGatewayInterface;
 use Drupal\pendulum_arc\ConnectService;
 use Drupal\pendulum_arc\ConnectionStoreInterface;
+use Drupal\pendulum_arc\ReportShotStoreInterface;
 use Drupal\pendulum_arc\GoogleFlagInterface;
 use Drupal\pendulum_arc\ContentLinkerInterface;
 use Drupal\pendulum_arc\IdGeneratorInterface;
@@ -136,7 +137,79 @@ final class ConnectFlowTest extends TestCase {
     self::assertSame('arc_live_example_secret', $creds['accessToken']);
   }
 
-  private function service(ConnectionStoreInterface $store, ArcGatewayInterface $client, RefreshLockInterface $lock, ?callable $onPause = NULL): ConnectService {
+  public function testAccessibilityReportStoresScreenshotsInOneBatch(): void {
+    $store = new MemoryStore();
+    $store->save([
+      'method' => 'api_key',
+      'env' => 'production',
+      'accessToken' => 'arc_live_example_secret',
+      'refreshToken' => '',
+      'expiresAt' => 0,
+      'accountLabel' => '',
+      'siteId' => 'site_abc',
+      'projectId' => 'client_abc',
+      'siteName' => 'Example',
+      'siteUrl' => 'https://example.com/',
+      'connectedAt' => '2026-01-01T00:00:00Z',
+    ]);
+    $client = new FakeGateway();
+    $client->reportPayload = [
+      'service' => 'a11y',
+      'runId' => 'run_1',
+      'blocks' => [
+        [
+          'kind' => 'table',
+          'id' => 'pages',
+          'heading' => 'Pages',
+          'columns' => [
+            ['id' => 'preview', 'label' => 'Preview'],
+          ],
+          'rows' => [
+            [
+              'id' => 'about',
+              'cells' => [
+                ['text' => ''],
+              ],
+              'page' => [
+                'title' => 'About',
+                'path' => '/about',
+                'url' => 'https://example.com/about',
+                'shot' => 'about.webp',
+              ],
+            ],
+          ],
+        ],
+      ],
+    ];
+    $client->mediaBatch = [
+      'images' => [
+        [
+          'file' => 'about.webp',
+          'contentType' => 'image/webp',
+          'data' => base64_encode('webp-bytes'),
+        ],
+      ],
+      'missing' => [],
+      'remaining' => [],
+    ];
+    $shots = new MemoryShots();
+    $service = $this->service($store, $client, new MemoryLock(TRUE), NULL, $shots);
+
+    $view = $service->report('a11y');
+    self::assertNull($view['error']);
+    self::assertContains('batch:about.webp', $client->calls);
+    self::assertNotContains('media:about.webp', $client->calls);
+
+    $media = $service->reportMedia('run_1', 'about.webp');
+    self::assertSame('webp-bytes', $media['bytes'] ?? '');
+    self::assertSame('image/webp', $media['type'] ?? '');
+
+    $again = $service->report('a11y');
+    self::assertNull($again['error']);
+    self::assertCount(1, array_filter($client->calls, static fn (string $call): bool => str_starts_with($call, 'batch:')));
+  }
+
+  private function service(ConnectionStoreInterface $store, ArcGatewayInterface $client, RefreshLockInterface $lock, ?callable $onPause = NULL, ?ReportShotStoreInterface $shots = NULL): ConnectService {
     return new ConnectService(
       $store,
       $client,
@@ -189,6 +262,7 @@ final class ConnectFlowTest extends TestCase {
         public function clear(): void {}
 
       },
+      $shots ?? new MemoryShots(),
     );
   }
 
@@ -371,12 +445,33 @@ final class FakeGateway implements ArcGatewayInterface {
     return [];
   }
 
+  /**
+   * @var array<string, mixed>
+   */
+  public array $reportPayload = [];
+
   public function report(string $env, string $token, string $siteId, string $service): array {
-    return [];
+    $this->calls[] = 'report:' . $service;
+    return $this->reportPayload;
   }
 
   public function reportMedia(string $env, string $token, string $runId, string $file): array {
+    $this->calls[] = 'media:' . $file;
     return ['bytes' => '', 'type' => 'image/png'];
+  }
+
+  /**
+   * @var array<string, mixed>
+   */
+  public array $mediaBatch = [
+    'images' => [],
+    'missing' => [],
+    'remaining' => [],
+  ];
+
+  public function reportMediaBatch(string $env, string $token, string $runId, array $files): array {
+    $this->calls[] = 'batch:' . implode(',', $files);
+    return $this->mediaBatch;
   }
 
   public function runs(string $env, string $token, string $siteId): array {
@@ -426,6 +521,43 @@ final class FakeGateway implements ArcGatewayInterface {
   public function exchangeCode(string $env, string $code, string $verifier, string $redirectUri): array {
     $this->calls[] = 'exchange';
     return [];
+  }
+
+}
+
+/**
+ * Screenshots kept in memory for one test.
+ */
+final class MemoryShots implements ReportShotStoreInterface {
+
+  /**
+   * @var array<string, array{bytes: string, type: string}>
+   */
+  private array $files = [];
+
+  /**
+   * @var array<string, true>
+   */
+  private array $missing = [];
+
+  public function read(string $runId, string $file): ?array {
+    return $this->files[$runId . '/' . $file] ?? NULL;
+  }
+
+  public function write(string $runId, string $file, string $bytes, string $type): void {
+    $this->files[$runId . '/' . $file] = [
+      'bytes' => $bytes,
+      'type' => $type,
+    ];
+  }
+
+  public function markMissing(string $runId, string $file): void {
+    $this->missing[$runId . '/' . $file] = TRUE;
+  }
+
+  public function has(string $runId, string $file): bool {
+    $key = $runId . '/' . $file;
+    return isset($this->files[$key]) || isset($this->missing[$key]);
   }
 
 }

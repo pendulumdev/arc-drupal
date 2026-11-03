@@ -1,6 +1,6 @@
 {
   "name": "arc-drupal",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "private": true,
   "description": "Connect a Drupal site to a Pendulum Arc account.",
   "author": "Pendulum Development Ltd",

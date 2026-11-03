@@ -57,6 +57,13 @@ interface ArcGatewayInterface {
   public function reportMedia(string $env, string $token, string $runId, string $file): array;
 
   /**
+   * @param array<int, string> $files
+   *
+   * @return array<string, mixed>
+   */
+  public function reportMediaBatch(string $env, string $token, string $runId, array $files): array;
+
+  /**
    * @return array<string, mixed>
    */
   public function runs(string $env, string $token, string $siteId): array;

@@ -85,6 +85,17 @@ final class ArcClient implements ArcGatewayInterface {
     return $this->binary('GET', $url, $token);
   }
 
+  /**
+   * @param array<int, string> $files
+   *
+   * @return array<string, mixed>
+   */
+  public function reportMediaBatch(string $env, string $token, string $runId, array $files): array {
+    $this->assertId($runId);
+    $url = $this->config->api($env) . '/v1/runs/' . rawurlencode($runId) . '/media';
+    return $this->json('POST', $url, $token, ['files' => array_values($files)]);
+  }
+
   public function runs(string $env, string $token, string $siteId): array {
     $this->assertId($siteId);
     $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/runs';

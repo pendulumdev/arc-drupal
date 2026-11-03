@@ -25,6 +25,7 @@ final class ConnectService {
     private readonly IdGeneratorInterface $ids,
     private readonly ContentLinkerInterface $links,
     private readonly GoogleFlagInterface $google,
+    private readonly ReportShotStoreInterface $shots,
   ) {}
 
   /**
@@ -365,6 +366,16 @@ final class ConnectService {
     $view = Pairing::report($payload);
     $view['service'] = $service;
     $view['blocks'] = $this->links->linkReportBlocks($view['blocks']);
+    $runId = (string) ($view['runId'] ?? '');
+    if ($service === 'a11y' && $runId !== '') {
+      try {
+        $this->storeShots($runId, $this->shotNames($view['blocks']));
+      }
+      catch (ArcApiException $error) {
+        $empty['error'] = self::adminMessage($error);
+        return $empty;
+      }
+    }
     $view['error'] = NULL;
     return $view;
   }
@@ -375,19 +386,99 @@ final class ConnectService {
    * @return array{bytes: string, type: string}|null
    */
   public function reportMedia(string $runId, string $file): ?array {
-    $creds = $this->store->credentials();
-    if ($creds === NULL) {
+    if ($this->store->credentials() === NULL) {
       return NULL;
     }
-    try {
-      $media = $this->bearerCall($creds, function (string $token) use ($creds, $runId, $file) {
-        return $this->client->reportMedia((string) $creds['env'], $token, $runId, $file);
+    return $this->shots->read($runId, $file);
+  }
+
+  /**
+   * Downloads accessibility screenshots in batches and keeps them on disk.
+   *
+   * @param array<int, string> $names
+   *   Shot file names from the report.
+   */
+  private function storeShots(string $runId, array $names): void {
+    $pending = [];
+    foreach ($names as $name) {
+      if ($name === '' || $this->shots->has($runId, $name)) {
+        continue;
+      }
+      $pending[$name] = $name;
+    }
+    $pending = array_values($pending);
+    for ($loop = 0; $loop < 30 && $pending !== []; $loop++) {
+      $asked = array_slice($pending, 0, 40);
+      $result = $this->withArc(function (string $env, string $token, string $siteId) use ($runId, $asked) {
+        unset($siteId);
+        return $this->client->reportMediaBatch($env, $token, $runId, $asked);
       });
+      $done = [];
+      $images = $result['images'] ?? [];
+      if (is_array($images)) {
+        foreach ($images as $image) {
+          if (!is_array($image)) {
+            continue;
+          }
+          $file = (string) ($image['file'] ?? '');
+          $type = (string) ($image['contentType'] ?? '');
+          $encoded = (string) ($image['data'] ?? '');
+          $bytes = base64_decode($encoded, TRUE);
+          if ($file === '' || !is_string($bytes) || $bytes === '') {
+            continue;
+          }
+          $this->shots->write($runId, $file, $bytes, $type);
+          $done[$file] = TRUE;
+        }
+      }
+      $missing = $result['missing'] ?? [];
+      if (is_array($missing)) {
+        foreach ($missing as $file) {
+          if (is_string($file) && $file !== '') {
+            $this->shots->markMissing($runId, $file);
+            $done[$file] = TRUE;
+          }
+        }
+      }
+      $next = [];
+      foreach ($pending as $file) {
+        if (!isset($done[$file])) {
+          $next[] = $file;
+        }
+      }
+      if (count($next) === count($pending)) {
+        throw new ArcApiException('Arc refused the request. Try again in a moment.', 502);
+      }
+      $pending = $next;
     }
-    catch (ArcApiException) {
-      return NULL;
+    if ($pending !== []) {
+      throw new ArcApiException('Arc refused the request. Try again in a moment.', 502);
     }
-    return is_array($media) ? $media : NULL;
+  }
+
+  /**
+   * @param array<int, array<string, mixed>> $blocks
+   *   Report blocks.
+   *
+   * @return array<int, string>
+   */
+  private function shotNames(array $blocks): array {
+    $names = [];
+    foreach ($blocks as $block) {
+      if (!is_array($block) || ($block['id'] ?? '') !== 'pages' || !is_array($block['rows'] ?? NULL)) {
+        continue;
+      }
+      foreach ($block['rows'] as $row) {
+        if (!is_array($row) || !is_array($row['page'] ?? NULL)) {
+          continue;
+        }
+        $shot = $row['page']['shot'] ?? '';
+        if (is_string($shot) && $shot !== '') {
+          $names[] = $shot;
+        }
+      }
+    }
+    return $names;
   }
 
   /**

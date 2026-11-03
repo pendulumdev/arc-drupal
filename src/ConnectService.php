@@ -24,6 +24,7 @@ final class ConnectService {
     private readonly SleeperInterface $sleeper,
     private readonly IdGeneratorInterface $ids,
     private readonly ContentLinkerInterface $links,
+    private readonly GoogleFlagInterface $google,
   ) {}
 
   /**
@@ -284,10 +285,29 @@ final class ConnectService {
         'error' => self::adminMessage($error),
       ];
     }
+    $scores = Pairing::scores($payload);
+    $this->google->remember(self::analyticsSetup($scores));
     return [
-      'scores' => Pairing::scores($payload),
+      'scores' => $scores,
       'error' => NULL,
     ];
+  }
+
+  /**
+   * Analytics setup from the scores rows. NULL when the card is ready.
+   *
+   * @param array<int, array<string, mixed>> $scores
+   *   Score rows.
+   */
+  private static function analyticsSetup(array $scores): ?string {
+    foreach ($scores as $row) {
+      if (($row['service'] ?? '') !== 'analytics') {
+        continue;
+      }
+      $setup = $row['setup'] ?? NULL;
+      return is_string($setup) && $setup !== '' ? $setup : NULL;
+    }
+    return NULL;
   }
 
   /**
@@ -347,6 +367,27 @@ final class ConnectService {
     $view['blocks'] = $this->links->linkReportBlocks($view['blocks']);
     $view['error'] = NULL;
     return $view;
+  }
+
+  /**
+   * One screenshot for a page preview. Null when Arc has none.
+   *
+   * @return array{bytes: string, type: string}|null
+   */
+  public function reportMedia(string $runId, string $file): ?array {
+    $creds = $this->store->credentials();
+    if ($creds === NULL) {
+      return NULL;
+    }
+    try {
+      $media = $this->bearerCall($creds, function (string $token) use ($creds, $runId, $file) {
+        return $this->client->reportMedia((string) $creds['env'], $token, $runId, $file);
+      });
+    }
+    catch (ArcApiException) {
+      return NULL;
+    }
+    return is_array($media) ? $media : NULL;
   }
 
   /**
@@ -410,9 +451,28 @@ final class ConnectService {
     return Pairing::enqueued_run($payload);
   }
 
+  /**
+   * Calls Arc with the paired site bearer, refreshing OAuth once after a 401.
+   *
+   * @param callable(string, string, string): array<string, mixed> $call
+   *   Env, bearer, and site id.
+   *
+   * @return array<string, mixed>
+   */
+  public function withArc(callable $call): array {
+    $creds = $this->store->credentials();
+    if ($creds === NULL) {
+      throw new ArcApiException('Connect this site to Arc first.', 401);
+    }
+    return $this->bearerCall($creds, function (string $token) use ($creds, $call) {
+      return $call((string) $creds['env'], $token, (string) $creds['siteId']);
+    });
+  }
+
   public function disconnect(int $userId): void {
     $this->store->clear();
     $this->store->clearPending($userId);
+    $this->google->clear();
   }
 
   /**

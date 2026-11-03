@@ -15,6 +15,25 @@ are sequenced in the Arc repo at `docs/research/system/platform-reach.md`.
 
 ## Known gaps
 
+### Settings setup
+
+Settings opens with a greeting and four steps: Install, Connect, Analytics,
+and Invite. Install is already done on this screen. Only the next unfinished
+step is a button. Analytics is done when the scores row is linked or ready
+to assign. Invite is done when one of the first five invite pages has an
+active member.
+
+### Report previews
+
+Report tables follow the Arc preview: accessibility and AI pages, bots,
+llms.txt, security surfaces, and structured rows for pages, socials, forms,
+and brand slots. A page screenshot is one file name. The browser loads it
+from `GET /admin/pendulum-arc/report-media`, which fetches the image from
+Arc and returns only webp, png, jpeg, or gif under 2 MB.
+
+The admin tabs are Analytics, Settings, and GDPR Consent. The paths stay
+`/admin/pendulum-arc` and `/admin/pendulum-arc/connect`.
+
 ### Drupal.org listing
 
 The project short name to request is `pendulum_arc`. The project does not
@@ -34,10 +53,81 @@ before enqueue must reconnect before Generate is allowed. A site connected
 before invite must reconnect before Arc can invite a project member. API-key
 connects already include enqueue when the key was created with that capability.
 
-The menu reads `GET /v1/sites/{siteId}/runs` when the notice opens, then
+The menu reads `GET /admin/pendulum-arc/runs` when the notice opens, then
 once a minute while any service is queued or running. When a service leaves
 in-flight, the scores and the open report reload. Each list spends a public
 API credit.
+
+### Sync keyphrases
+
+Connect Settings has **Sync keyphrases**. It keeps a local list of focus
+phrases already stored by Real-time SEO (`yoast_seo` field type,
+`focus_keyword`). That covers the Real-time SEO module and the Drupal CMS
+SEO Tools recipe, whatever machine name the site gave the field. The module
+is not required. Metatag keywords and Neo SEO are not read.
+
+A cron scan fills that list one page at a time. It does not call Arc. Entity
+save, delete, and path alias changes update one row. The table is
+`pendulum_arc_keyphrases`. Sync state is `pendulum_arc.keyphrases`.
+
+Phrases are folded the way Arc stores them: NFC when intl is loaded, curly
+quotes and dashes become ASCII, and invisible marks are removed. A phrase
+with no letter or number, an embedded comma, more than 80 UTF-16 units, or
+a joined list over 500 units drops that row. A phrase Arc would drop is
+left out of the hash, and a phrase that was synced and then dropped is sent
+as a delete.
+
+When that list differs from Arc, an alert at the top of Analytics, Settings,
+and GDPR Consent says so, and the Arc toolbar item shows a count of 1. That
+is the only alert that adds to the count. The same area also says to connect
+a Google account when Analytics has none, and to connect this install when
+it is not paired with Arc. Those notices do not change the menu count.
+**Sync with Arc** is shown after the first scan, and only when the local
+list hash differs from `GET /v1/sites/{siteId}/seo-targets`. The click sends
+dirty rows when Arc still matches the last accepted hash, or the whole list
+when Arc has moved. Commit uses `auto_run: true`, which queues the SEO
+report. Turning the checkbox off clears the Drupal list and leaves the Arc
+target in place. New installs start with sync off.
+
+### Connect Google
+
+Connect Google and Assign in Arc call `POST /admin/pendulum-arc/google-connect`.
+That mints `POST /v1/sites/{siteId}/google-connect-handoffs`, then reads
+invite-status for the current Drupal user's email. An `active` Arc account
+is sent to the ticket URL. An `absent` account with status `none` is invited
+with `continue` set to that ticket path, and Drupal asks them to open the
+email. A pending invite is not sent again. After save or cancel, Arc returns
+to the dashboard. The module accepts that return only when `state` matches
+the value stored for that user, then reads the site again. The query string
+is not the proof that Google is bound. A missing Google account is remembered
+in `pendulum_arc.google_missing` when scores say `connect_google`. Disconnect
+clears it.
+
+A grant from before `arc:invite` can still open the ticket for someone who
+already has an Arc account. Inviting a new account needs Disconnect and
+Connect with Arc again.
+
+### Invite administrators
+
+The Connect screen shows an Invite card to the left of Connection when the
+site is paired.
+
+An invited person becomes a member of this project. They can view and
+generate reports for every site on it. They cannot invite other people,
+change the plan, or remove sites.
+
+Invite opens a list of Drupal users with `administer pendulum arc`, 100 per
+page. A search box matches name or email across the whole list, and Previous
+and Next stay on that search. The module reads
+`POST /v1/projects/{projectId}/invite-status` for that page. Someone who is
+not on this project is checked, whether or not they already have an Arc
+account. A member, a pending invite, or a user with no email cannot be
+selected. Send invites posts the checked people on the current page to
+`POST /admin/pendulum-arc/invites`, which calls
+`POST /v1/projects/{projectId}/invites` once for that page with
+`{ "emails" }` and no `continue` path. Other pages are not included. A
+pending-invite cap comes back as a refusal for that person and is not
+retried.
 
 ### API key cannot create a project
 
@@ -66,6 +156,8 @@ Treat these as the module contract. Changing any of them is a breaking
 change:
 
 - State key `pendulum_arc.connection`
+- State keys `pendulum_arc.keyphrases` and `pendulum_arc.google_missing`
+- Table `pendulum_arc_keyphrases`
 - Routes under `/admin/pendulum-arc`
 - The OAuth client id `arc_app_drupal` and the redirect back to
   `/admin/pendulum-arc/connect`

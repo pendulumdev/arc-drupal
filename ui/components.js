@@ -31,6 +31,9 @@ export function TextControl({
   title,
   onClick,
   onFocus,
+  placeholder,
+  disabled = false,
+  hideLabel = false,
 }) {
   const id =
     idProp ||
@@ -38,13 +41,17 @@ export function TextControl({
   const classes = ["pendulum-arc-field", className].filter(Boolean).join(" ");
   return (
     <div className={classes}>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className={hideLabel ? "visually-hidden" : undefined}>
+        {label}
+      </label>
       <input
         id={id}
         type={type}
         value={value}
         autoComplete={autoComplete}
         readOnly={readOnly}
+        disabled={disabled}
+        placeholder={placeholder}
         title={title}
         onClick={onClick}
         onFocus={onFocus}

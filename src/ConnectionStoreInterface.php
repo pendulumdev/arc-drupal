@@ -66,4 +66,14 @@ interface ConnectionStoreInterface {
    */
   public function takeNotice(int $userId): ?array;
 
+  /**
+   * Remembers the Google handoff state for this admin.
+   */
+  public function putGoogleState(int $userId, string $state): void;
+
+  /**
+   * Reads and forgets the Google handoff state. Empty when none was stored.
+   */
+  public function takeGoogleState(int $userId): string;
+
 }

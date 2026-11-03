@@ -10,6 +10,7 @@ use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Url;
+use Drupal\pendulum_arc\Alerts;
 use Drupal\pendulum_arc\ArcConfig;
 use Drupal\pendulum_arc\ConnectionStoreInterface;
 use Drupal\pendulum_arc\ConsentLog;
@@ -33,6 +34,7 @@ final class ConsentController extends ControllerBase {
     private readonly CsrfTokenGenerator $csrf,
     private readonly FileUrlGeneratorInterface $files,
     private readonly FileSystemInterface $fileSystem,
+    private readonly Alerts $alerts,
   ) {}
 
   /**
@@ -47,6 +49,7 @@ final class ConsentController extends ControllerBase {
       $container->get('csrf_token'),
       $container->get('file_url_generator'),
       $container->get('file_system'),
+      $container->get('pendulum_arc.alerts'),
     );
   }
 
@@ -58,9 +61,11 @@ final class ConsentController extends ControllerBase {
   public function page(Request $request): array {
     $this->consent->detect(ConsentStore::cookieNames($request), []);
     $userId = (int) $this->currentUser()->id();
+    $connectUrl = Url::fromRoute('pendulum_arc.connect')->toString();
     $bootstrap = [
       'page' => 'consent',
-      'notice' => $this->store->takeNotice($userId),
+      'userName' => (string) $this->currentUser()->getDisplayName(),
+      'alerts' => $this->alerts->forScreen('consent', $this->store->takeNotice($userId), $connectUrl),
       'connection' => $this->store->publicView(),
       'pending' => $this->store->pendingPublic($userId),
       'consent' => $this->consent->view(),
@@ -68,7 +73,7 @@ final class ConsentController extends ControllerBase {
       'cookieIcon' => $this->assetUrl('cookie-icon.svg'),
       'urls' => [
         'dashboard' => Url::fromRoute('pendulum_arc.dashboard')->toString(),
-        'connect' => Url::fromRoute('pendulum_arc.connect')->toString(),
+        'connect' => $connectUrl,
         'portal' => $this->portalUrl(),
         'arcMark' => $this->assetUrl('arc-mark-color.svg'),
         'pendulumMark' => $this->assetUrl('pendulum-mark.svg'),

@@ -75,6 +75,16 @@ final class ArcClient implements ArcGatewayInterface {
     return $this->json('GET', $url, $token);
   }
 
+  /**
+   * @return array{bytes: string, type: string}
+   */
+  public function reportMedia(string $env, string $token, string $runId, string $file): array {
+    $this->assertId($runId);
+    $this->assertFile($file);
+    $url = $this->config->api($env) . '/v1/runs/' . rawurlencode($runId) . '/media/' . rawurlencode($file);
+    return $this->binary('GET', $url, $token);
+  }
+
   public function runs(string $env, string $token, string $siteId): array {
     $this->assertId($siteId);
     $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/runs';
@@ -91,6 +101,76 @@ final class ArcClient implements ArcGatewayInterface {
     }
     $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/runs';
     return $this->json('POST', $url, $token, ['service' => $service], ['Idempotency-Key' => $key]);
+  }
+
+  public function googleConnectHandoff(string $env, string $token, string $siteId, string $returnUri, string $state): array {
+    $this->assertId($siteId);
+    $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/google-connect-handoffs';
+    return $this->json('POST', $url, $token, [
+      'return_uri' => $returnUri,
+      'state' => $state,
+    ]);
+  }
+
+  public function inviteStatus(string $env, string $token, string $projectId, array $emails): array {
+    $this->assertId($projectId);
+    $url = $this->config->api($env) . '/v1/projects/' . rawurlencode($projectId) . '/invite-status';
+    return $this->json('POST', $url, $token, ['emails' => array_values($emails)]);
+  }
+
+  public function createInvites(string $env, string $token, string $projectId, array $emails, string $key): array {
+    $this->assertId($projectId);
+    $this->assertKey($key);
+    $url = $this->config->api($env) . '/v1/projects/' . rawurlencode($projectId) . '/invites';
+    return $this->json('POST', $url, $token, ['emails' => array_values($emails)], ['Idempotency-Key' => $key]);
+  }
+
+  public function createInvite(string $env, string $token, string $projectId, string $email, string $continuePath, string $key): array {
+    $this->assertId($projectId);
+    $this->assertKey($key);
+    $url = $this->config->api($env) . '/v1/projects/' . rawurlencode($projectId) . '/invites';
+    $body = ['email' => $email];
+    if ($continuePath !== '') {
+      $body['continue'] = $continuePath;
+    }
+    return $this->json('POST', $url, $token, $body, ['Idempotency-Key' => $key]);
+  }
+
+  public function seoTargets(string $env, string $token, string $siteId): array {
+    $this->assertId($siteId);
+    $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/seo-targets';
+    return $this->json('GET', $url, $token);
+  }
+
+  public function startSeoTargetSync(string $env, string $token, string $siteId, string $key): array {
+    $this->assertId($siteId);
+    $this->assertKey($key);
+    $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/seo-target-syncs';
+    return $this->json('POST', $url, $token, [], ['Idempotency-Key' => $key]);
+  }
+
+  public function appendSeoTargetBatch(string $env, string $token, string $siteId, string $syncId, array $batch, string $key): array {
+    $this->assertId($siteId);
+    $this->assertId($syncId);
+    $this->assertKey($key);
+    $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/seo-target-syncs/' . rawurlencode($syncId) . '/batches';
+    return $this->json('POST', $url, $token, $batch, ['Idempotency-Key' => $key]);
+  }
+
+  public function commitSeoTargetSync(string $env, string $token, string $siteId, string $syncId, array $body, string $key): array {
+    $this->assertId($siteId);
+    $this->assertId($syncId);
+    $this->assertKey($key);
+    $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/seo-target-syncs/' . rawurlencode($syncId) . '/commit';
+    return $this->json('POST', $url, $token, $body, ['Idempotency-Key' => $key]);
+  }
+
+  public function abandonSeoTargetSync(string $env, string $token, string $siteId, string $syncId, string $key): array {
+    $this->assertId($siteId);
+    $this->assertId($syncId);
+    $this->assertKey($key);
+    $url = $this->config->api($env) . '/v1/sites/' . rawurlencode($siteId) . '/seo-target-syncs/' . rawurlencode($syncId);
+    return $this->json('DELETE', $url, $token, NULL, ['Idempotency-Key' => $key]);
   }
 
   public function exchangeCode(string $env, string $code, string $verifier, string $redirectUri): array {
@@ -195,7 +275,7 @@ final class ArcClient implements ArcGatewayInterface {
     $raw = (string) $response->getBody();
     $json = json_decode($raw, TRUE);
     if ($status < 200 || $status >= 300) {
-      throw new ArcApiException(self::safeMessage($json, $status), $status);
+      throw new ArcApiException(self::safeMessage($json, $status), $status, self::errorCode($json));
     }
     return is_array($json) ? $json : [];
   }
@@ -240,10 +320,70 @@ final class ArcClient implements ArcGatewayInterface {
     return 'Arc refused the request. Try again in a moment.';
   }
 
+  /**
+   * @return array{bytes: string, type: string}
+   */
+  private function binary(string $method, string $url, string $token): array {
+    $headers = [
+      'Accept' => 'image/webp,image/png,image/jpeg,image/gif',
+      'Authorization' => 'Bearer ' . $token,
+      'User-Agent' => $this->userAgent(),
+    ];
+    $url = $this->prepareUrl($url, $headers);
+    try {
+      $response = $this->http->request($method, $url, [
+        'headers' => $headers,
+        'http_errors' => FALSE,
+        'allow_redirects' => FALSE,
+        'timeout' => 20,
+      ]);
+    }
+    catch (GuzzleException) {
+      throw new ArcApiException('Arc could not be reached. Try again in a moment.', 0);
+    }
+    $status = $response->getStatusCode();
+    $raw = (string) $response->getBody();
+    $type = strtolower(trim(explode(';', $response->getHeaderLine('Content-Type'))[0]));
+    $images = ['image/webp', 'image/png', 'image/jpeg', 'image/gif'];
+    if ($status < 200 || $status >= 300 || !in_array($type, $images, TRUE) || strlen($raw) > 2000000) {
+      throw new ArcApiException('That screenshot is not available.', $status);
+    }
+    return [
+      'bytes' => $raw,
+      'type' => $type,
+    ];
+  }
+
+  private function assertFile(string $file): void {
+    if (str_contains($file, '..') || 1 !== preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/', $file)) {
+      throw new ArcApiException('That screenshot is not available.', 404);
+    }
+  }
+
   private function assertId(string $id): void {
     if (1 !== preg_match('/^[A-Za-z0-9_-]{1,128}$/', $id)) {
       throw new ArcApiException('That Arc id is not valid.', 400);
     }
+  }
+
+  private function assertKey(string $key): void {
+    if (1 !== preg_match('/^[A-Za-z0-9_-]{8,200}$/', $key)) {
+      throw new ArcApiException('Arc refused the request. Try again in a moment.', 400);
+    }
+  }
+
+  /**
+   * @param mixed $json
+   */
+  private static function errorCode($json): string {
+    if (!is_array($json) || !isset($json['error']) || !is_array($json['error'])) {
+      return '';
+    }
+    $code = $json['error']['code'] ?? '';
+    if (!is_string($code) || 1 !== preg_match('/^[A-Z0-9_]{1,64}$/', $code)) {
+      return '';
+    }
+    return $code;
   }
 
   private function userAgent(): string {

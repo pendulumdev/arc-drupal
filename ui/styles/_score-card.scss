@@ -301,6 +301,40 @@ button.arc-score-card {
 	text-decoration: underline;
 }
 
+.claro button.arc-score-card__action,
+button.arc-score-card__action {
+	height: auto;
+	min-height: 0;
+	margin: 0.35rem 0 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	color: var(--arc-accent-cyan);
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.375;
+	text-decoration: underline;
+	vertical-align: baseline;
+	cursor: pointer;
+}
+
+.claro button.arc-score-card__action:hover,
+.claro button.arc-score-card__action:focus,
+button.arc-score-card__action:hover,
+button.arc-score-card__action:focus {
+	background: transparent;
+	box-shadow: none;
+	color: var(--arc-accent-cyan);
+}
+
+.claro button.arc-score-card__action:disabled,
+button.arc-score-card__action:disabled {
+	cursor: wait;
+	opacity: 0.7;
+}
+
 .arc-score-card__action:focus {
 	border-radius: var(--arc-radius-tiny);
 }

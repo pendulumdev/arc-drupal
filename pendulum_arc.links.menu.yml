@@ -10,13 +10,13 @@ pendulum_arc.dashboard:
         - toolbar-icon-pendulum-arc-dashboard
 
 pendulum_arc.dashboard_tab:
-  title: Dashboard
+  title: Analytics
   route_name: pendulum_arc.dashboard
   parent: pendulum_arc.dashboard
   weight: 0
 
 pendulum_arc.connect:
-  title: Connect
+  title: Settings
   route_name: pendulum_arc.connect
   parent: pendulum_arc.dashboard
   weight: 10

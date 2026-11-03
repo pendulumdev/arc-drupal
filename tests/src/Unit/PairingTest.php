@@ -141,6 +141,92 @@ final class PairingTest extends TestCase {
     self::assertSame('seo', $view['service']);
     self::assertSame('Needs work', $view['hero']['band']);
     self::assertNull($view['blocks'][0]['rows'][0]['cells'][0]['image']);
+    self::assertSame([], $view['blocks'][0]['rows'][0]['targets']);
+  }
+
+  public function testReportKeepsStructuredRowsAndDropsUnsafeUrls(): void {
+    $view = Pairing::report([
+      'service' => 'seo',
+      'blocks' => [
+        [
+          'kind' => 'table',
+          'id' => 'pages',
+          'heading' => 'Pages',
+          'rows' => [
+            [
+              'cells' => [['text' => 'About']],
+              'page' => [
+                'title' => 'About<script>',
+                'path' => '/about',
+                'url' => 'javascript:alert(1)',
+                'viewport' => 'desktop',
+                'keyphrases' => ['widgets', '<b>sale</b>'],
+                'keyphraseScore' => '70',
+                'score' => '88',
+                'siteName' => 'Example',
+                'brokenLinkCount' => 0,
+                'issueCount' => 1,
+                'shot' => '../secret.png',
+                'issues' => [
+                  [
+                    'key' => 'S-title',
+                    'title' => 'Short title<script>',
+                    'severity' => 'nope',
+                    'dimension' => 'meta',
+                    'summary' => 'Too short',
+                    'fix' => 'Write more',
+                  ],
+                ],
+              ],
+              'social' => [
+                'url' => 'https://user:secret@example.com/acme',
+                'platform' => 'x',
+              ],
+              'targets' => ['surfaces::finding:login', 'nope'],
+            ],
+          ],
+        ],
+        [
+          'kind' => 'card',
+          'id' => 'short-mark',
+          'heading' => 'Short mark',
+          'mark' => [
+            'present' => TRUE,
+            'family' => 'F2',
+            'sharedFamily' => TRUE,
+            'role' => 'short',
+          ],
+        ],
+      ],
+      'issues' => [
+        [
+          'label' => 'Pages',
+          'items' => [
+            [
+              'title' => 'Short title',
+              'pages' => [
+                ['url' => 'https://example.com/about', 'label' => 'About'],
+                ['url' => 'javascript:alert(1)', 'label' => 'Bad'],
+              ],
+            ],
+          ],
+        ],
+      ],
+    ]);
+    $page = $view['blocks'][0]['rows'][0]['page'];
+    self::assertSame('About', $page['title']);
+    self::assertSame('', $page['url']);
+    self::assertSame(['widgets', 'sale'], $page['keyphrases']);
+    self::assertArrayNotHasKey('shot', $page);
+    self::assertSame('', $page['issues'][0]['severity']);
+    self::assertArrayNotHasKey('social', $view['blocks'][0]['rows'][0]);
+    self::assertSame(['surfaces::finding:login'], $view['blocks'][0]['rows'][0]['targets']);
+    self::assertTrue($view['blocks'][1]['mark']['present']);
+    self::assertSame('F2', $view['blocks'][1]['mark']['family']);
+    self::assertSame(
+      [['url' => 'https://example.com/about', 'label' => 'About']],
+      $view['issues'][0]['items'][0]['pages'],
+    );
   }
 
   /**

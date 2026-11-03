@@ -138,6 +138,40 @@ export function enqueueRun(service) {
   });
 }
 
+export function startGoogleConnect() {
+  return request("/admin/pendulum-arc/google-connect", { method: "POST" });
+}
+
+export function fetchInvites(page, search = "") {
+  const params = new URLSearchParams({ page: String(page) });
+  if (search) {
+    params.set("search", search);
+  }
+  return request(`/admin/pendulum-arc/invites?${params.toString()}`);
+}
+
+export function sendInvites(userIds) {
+  return request("/admin/pendulum-arc/invites", {
+    method: "POST",
+    body: { userIds },
+  });
+}
+
+export function fetchKeyphrases() {
+  return request("/admin/pendulum-arc/keyphrases");
+}
+
+export function setKeyphrasesEnabled(enabled) {
+  return request("/admin/pendulum-arc/keyphrases", {
+    method: "POST",
+    body: { enabled },
+  });
+}
+
+export function syncKeyphrases() {
+  return request("/admin/pendulum-arc/keyphrases/sync", { method: "POST" });
+}
+
 export function fieldErrors(error) {
   if (error && error.data && error.data.fields) {
     return error.data.fields;

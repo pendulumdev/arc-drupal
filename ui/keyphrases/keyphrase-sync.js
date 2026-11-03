@@ -1,0 +1,181 @@
+/**
+ * Internal dependencies
+ */
+import { useCallback, useEffect, useState } from 'react';
+import { __ } from '../i18n.js';
+import {
+	errorMessage,
+	fetchKeyphrases,
+	setKeyphrasesEnabled,
+	syncKeyphrases,
+} from '../api';
+import { ArcButton } from '../ui/button';
+
+/**
+ * Sync keyphrases control. The scan stays on this site. Arc is called when this screen loads after the scan, and when the button is clicked.
+ *
+ * @param {Object}                      props
+ * @param {boolean}                     props.connected  Paired with an Arc site.
+ * @param {string}                      [props.arcMark]  Arc mark shown on the sync button.
+ * @param {(diverged: boolean) => void} [props.onStatus] Called when the list is known to match or differ.
+ */
+export function KeyphraseSync( { connected, arcMark, onStatus } ) {
+	const [ status, setStatus ] = useState( null );
+	const [ message, setMessage ] = useState( '' );
+	const [ error, setError ] = useState( '' );
+	const [ busy, setBusy ] = useState( false );
+
+	const apply = useCallback(
+		( next ) => {
+			setStatus( next );
+			setError( next.error || '' );
+			if ( onStatus ) {
+				onStatus( Boolean( next?.diverged ) );
+			}
+		},
+		[ onStatus ]
+	);
+
+	const load = useCallback( async () => {
+		try {
+			apply( await fetchKeyphrases() );
+		} catch ( failure ) {
+			setError(
+				failure?.message ||
+					__( 'Keyphrases could not be loaded.', 'pendulum-arc' )
+			);
+		}
+	}, [ apply ] );
+
+	useEffect( () => {
+		load();
+	}, [ load ] );
+
+	useEffect( () => {
+		if ( ! status?.scanning ) {
+			return undefined;
+		}
+		const timer = window.setInterval( load, 4000 );
+		return () => window.clearInterval( timer );
+	}, [ status?.scanning, load ] );
+
+	const onToggle = async ( enabled ) => {
+		setBusy( true );
+		setMessage( '' );
+		setError( '' );
+		try {
+			apply( await setKeyphrasesEnabled( enabled ) );
+		} catch ( failure ) {
+			setError(
+				failure?.message ||
+					__( 'Keyphrases could not be updated.', 'pendulum-arc' )
+			);
+		} finally {
+			setBusy( false );
+		}
+	};
+
+	const onSync = async () => {
+		setBusy( true );
+		setMessage( '' );
+		setError( '' );
+		try {
+			const result = await syncKeyphrases();
+			setMessage( result.message || '' );
+			await load();
+		} catch ( failure ) {
+			setError(
+				failure?.message ||
+					__( 'Keyphrases could not be synced.', 'pendulum-arc' )
+			);
+		} finally {
+			setBusy( false );
+		}
+	};
+
+	const showButton = Boolean(
+		connected &&
+			status?.enabled &&
+			status?.scanDone &&
+			status?.diverged &&
+			! busy
+	);
+	const checkId = 'pendulum-arc-sync-keyphrases';
+
+	return (
+		<section className="arc-keyphrases">
+			<div className="arc-consent-check">
+				<input
+					id={ checkId }
+					className="arc-check"
+					type="checkbox"
+					checked={ Boolean( status?.enabled ) }
+					disabled={ busy || ! status }
+					onChange={ ( event ) => onToggle( event.target.checked ) }
+				/>
+				<label htmlFor={ checkId }>
+					<span className="arc-consent-field__label">
+						{ __( 'Sync keyphrases', 'pendulum-arc' ) }
+					</span>
+					<span className="arc-consent-field__help">
+						{ __(
+							'Keep a list of focus keyphrases from Real-time SEO. Send that list to Arc when you choose to.',
+							'pendulum-arc'
+						) }
+					</span>
+				</label>
+			</div>
+			{ status?.notice && ! status?.enabled ? (
+				<div
+					className="arc-report-alert arc-report-alert--info"
+					role="status"
+				>
+					<p>
+						{ __(
+							'If you turn Sync keyphrases back on later, it may take a few minutes to resync the keyphrases with Arc.',
+							'pendulum-arc'
+						) }
+					</p>
+				</div>
+			) : null }
+			{ status?.scanning ? (
+				<div
+					className="arc-report-alert arc-report-alert--info"
+					role="status"
+				>
+					<p>
+						{ __(
+							'Reading keyphrases. This can take a few minutes.',
+							'pendulum-arc'
+						) }
+					</p>
+				</div>
+			) : null }
+			{ showButton ? (
+				<div>
+					<ArcButton
+						variant="connect"
+						mark={ arcMark }
+						busy={ busy }
+						onClick={ onSync }
+					>
+						{ __( 'Sync with Arc', 'pendulum-arc' ) }
+					</ArcButton>
+				</div>
+			) : null }
+			{ message ? (
+				<div
+					className="arc-report-alert arc-report-alert--info"
+					role="status"
+				>
+					<p>{ message }</p>
+				</div>
+			) : null }
+			{ error ? (
+				<div className="arc-report-alert arc-report-alert--error" role="alert">
+					<p>{ error }</p>
+				</div>
+			) : null }
+		</section>
+	);
+}

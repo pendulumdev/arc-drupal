@@ -31,6 +31,11 @@ function pendulum_arc_uninstall(): void {
   if ($schema->tableExists('pendulum_arc_consent_log')) {
     $schema->dropTable('pendulum_arc_consent_log');
   }
+  if ($schema->tableExists('pendulum_arc_keyphrases')) {
+    $schema->dropTable('pendulum_arc_keyphrases');
+  }
+  \Drupal::state()->delete('pendulum_arc.keyphrases');
+  \Drupal::state()->delete('pendulum_arc.google_missing');
 }
 
 /**
@@ -92,6 +97,63 @@ function pendulum_arc_schema(): array {
         'created_gmt' => ['created_gmt'],
       ],
     ],
+    'pendulum_arc_keyphrases' => [
+      'description' => 'Local focus keyphrases waiting to sync with Arc.',
+      'fields' => [
+        'path_hash' => [
+          'type' => 'varchar',
+          'length' => 64,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'path' => [
+          'type' => 'varchar',
+          'length' => 512,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'phrase' => [
+          'type' => 'varchar',
+          'length' => 500,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'synced_phrase' => [
+          'type' => 'varchar',
+          'length' => 500,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'deleted' => [
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+        ],
+        'entity_type' => [
+          'type' => 'varchar',
+          'length' => 32,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'entity_id' => [
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'langcode' => [
+          'type' => 'varchar',
+          'length' => 12,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+      ],
+      'primary key' => ['path_hash'],
+      'indexes' => [
+        'entity' => ['entity_type', 'entity_id', 'langcode'],
+      ],
+    ],
   ];
 }
 
@@ -102,5 +164,15 @@ function pendulum_arc_update_8001(): void {
   $schema = \Drupal::database()->schema();
   if (!$schema->tableExists('pendulum_arc_consent_log')) {
     $schema->createTable('pendulum_arc_consent_log', pendulum_arc_schema()['pendulum_arc_consent_log']);
+  }
+}
+
+/**
+ * Creates the local keyphrase list.
+ */
+function pendulum_arc_update_8002(): void {
+  $schema = \Drupal::database()->schema();
+  if (!$schema->tableExists('pendulum_arc_keyphrases')) {
+    $schema->createTable('pendulum_arc_keyphrases', pendulum_arc_schema()['pendulum_arc_keyphrases']);
   }
 }

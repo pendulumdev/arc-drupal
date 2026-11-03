@@ -205,7 +205,8 @@
 	border-right: 1px solid color-mix(in srgb, var(--arc-accent-amber) 45%, transparent);
 }
 
-.arc-button__mark img {
+.arc-button__mark img,
+.arc-button__mark svg {
 	display: block;
 	width: 1.125rem;
 	height: 1.125rem;

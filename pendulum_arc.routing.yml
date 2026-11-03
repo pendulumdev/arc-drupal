@@ -2,7 +2,7 @@ pendulum_arc.dashboard:
   path: /admin/pendulum-arc
   defaults:
     _controller: Drupal\pendulum_arc\Controller\PageController::dashboard
-    _title: 'Arc Analytics - Dashboard'
+    _title: 'Arc Analytics - Analytics'
   requirements:
     _permission: 'administer pendulum arc'
   options:
@@ -12,7 +12,7 @@ pendulum_arc.connect:
   path: /admin/pendulum-arc/connect
   defaults:
     _controller: Drupal\pendulum_arc\Controller\PageController::connect
-    _title: 'Arc Analytics - Connect'
+    _title: 'Arc Analytics - Settings'
   requirements:
     _permission: 'administer pendulum arc'
   options:
@@ -102,6 +102,16 @@ pendulum_arc.analytics:
   requirements:
     _permission: 'administer pendulum arc'
     _csrf_request_header_token: 'TRUE'
+  methods: [GET]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.report_media:
+  path: /admin/pendulum-arc/report-media
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::reportMedia
+  requirements:
+    _permission: 'administer pendulum arc'
   methods: [GET]
   options:
     _admin_route: TRUE
@@ -200,5 +210,49 @@ pendulum_arc.runs:
     _permission: 'administer pendulum arc'
     _csrf_request_header_token: 'TRUE'
   methods: [GET, POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.google_connect:
+  path: /admin/pendulum-arc/google-connect
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::googleConnect
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.invites:
+  path: /admin/pendulum-arc/invites
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::invites
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [GET, POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.keyphrases:
+  path: /admin/pendulum-arc/keyphrases
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::keyphrases
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [GET, POST]
+  options:
+    _admin_route: TRUE
+
+pendulum_arc.keyphrases_sync:
+  path: /admin/pendulum-arc/keyphrases/sync
+  defaults:
+    _controller: Drupal\pendulum_arc\Controller\JsonController::keyphrasesSync
+  requirements:
+    _permission: 'administer pendulum arc'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
   options:
     _admin_route: TRUE

@@ -8,7 +8,11 @@
  * @param {boolean}                                     [props.disabled]
  * @param {boolean}                                     [props.busy]
  * @param {string}                                      [props.mark]     Logo shown in a left segment.
+ * @param {import('react').ReactNode}                   [props.icon]     Icon shown in the same left segment.
+ * @param {string}                                      [props.className]
  * @param {(event: import('react').MouseEvent) => void} [props.onClick]
+ * @param {string}                                      [props.ariaLabel]
+ * @param {boolean}                                     [props.pressed]
  * @param {import('react').ReactNode}                   props.children
  */
 export function ArcButton( {
@@ -18,16 +22,31 @@ export function ArcButton( {
 	disabled,
 	busy,
 	mark,
+	icon,
+	className,
 	onClick,
+	ariaLabel,
+	pressed,
 	children,
+	...rest
 } ) {
-	const className = mark
-		? `arc-button arc-button--${ variant } arc-button--marked`
-		: `arc-button arc-button--${ variant }`;
-	const inner = mark ? (
+	const marked = Boolean( mark || icon );
+	const classes = [
+		'arc-button',
+		`arc-button--${ variant }`,
+		marked ? 'arc-button--marked' : '',
+		className || '',
+	]
+		.filter( Boolean )
+		.join( ' ' );
+	const inner = marked ? (
 		<>
 			<span className="arc-button__mark">
-				<img src={ mark } alt="" width="18" height="18" />
+				{ mark ? (
+					<img src={ mark } alt="" width="18" height="18" />
+				) : (
+					icon
+				) }
 			</span>
 			{ children }
 		</>
@@ -36,17 +55,25 @@ export function ArcButton( {
 	);
 	if ( href ) {
 		return (
-			<a className={ className } href={ href }>
+			<a
+				{ ...rest }
+				className={ classes }
+				href={ href }
+				onClick={ onClick }
+			>
 				{ inner }
 			</a>
 		);
 	}
 	return (
 		<button
-			className={ className }
+			{ ...rest }
+			className={ classes }
 			type={ type }
 			disabled={ disabled || busy }
-			aria-busy={ busy ? 'true' : undefined }
+			aria-busy={ busy ? 'true' : rest[ 'aria-busy' ] }
+			aria-label={ ariaLabel }
+			aria-pressed={ pressed }
 			onClick={ onClick }
 		>
 			{ inner }

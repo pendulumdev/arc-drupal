@@ -9,6 +9,7 @@ use Drupal\pendulum_arc\ArcConfig;
 use Drupal\pendulum_arc\ArcGatewayInterface;
 use Drupal\pendulum_arc\ConnectService;
 use Drupal\pendulum_arc\ConnectionStoreInterface;
+use Drupal\pendulum_arc\GoogleFlagInterface;
 use Drupal\pendulum_arc\ContentLinkerInterface;
 use Drupal\pendulum_arc\IdGeneratorInterface;
 use Drupal\pendulum_arc\RefreshLockInterface;
@@ -177,6 +178,17 @@ final class ConnectFlowTest extends TestCase {
         }
 
       },
+      new class implements GoogleFlagInterface {
+
+        public function remember(?string $setup): void {}
+
+        public function missing(): bool {
+          return FALSE;
+        }
+
+        public function clear(): void {}
+
+      },
     );
   }
 
@@ -278,6 +290,12 @@ final class MemoryStore implements ConnectionStoreInterface {
     return NULL;
   }
 
+  public function putGoogleState(int $userId, string $state): void {}
+
+  public function takeGoogleState(int $userId): string {
+    return '';
+  }
+
 }
 
 /**
@@ -357,11 +375,51 @@ final class FakeGateway implements ArcGatewayInterface {
     return [];
   }
 
+  public function reportMedia(string $env, string $token, string $runId, string $file): array {
+    return ['bytes' => '', 'type' => 'image/png'];
+  }
+
   public function runs(string $env, string $token, string $siteId): array {
     return [];
   }
 
   public function enqueueRun(string $env, string $token, string $siteId, string $service, string $key): array {
+    return [];
+  }
+
+  public function googleConnectHandoff(string $env, string $token, string $siteId, string $returnUri, string $state): array {
+    return [];
+  }
+
+  public function inviteStatus(string $env, string $token, string $projectId, array $emails): array {
+    return [];
+  }
+
+  public function createInvites(string $env, string $token, string $projectId, array $emails, string $key): array {
+    return [];
+  }
+
+  public function createInvite(string $env, string $token, string $projectId, string $email, string $continuePath, string $key): array {
+    return [];
+  }
+
+  public function seoTargets(string $env, string $token, string $siteId): array {
+    return [];
+  }
+
+  public function startSeoTargetSync(string $env, string $token, string $siteId, string $key): array {
+    return [];
+  }
+
+  public function appendSeoTargetBatch(string $env, string $token, string $siteId, string $syncId, array $batch, string $key): array {
+    return [];
+  }
+
+  public function commitSeoTargetSync(string $env, string $token, string $siteId, string $syncId, array $body, string $key): array {
+    return [];
+  }
+
+  public function abandonSeoTargetSync(string $env, string $token, string $siteId, string $syncId, string $key): array {
     return [];
   }
 

@@ -35,6 +35,56 @@ services:
       - '@pendulum_arc.sleeper'
       - '@pendulum_arc.ids'
       - '@pendulum_arc.links'
+      - '@pendulum_arc.google'
+  pendulum_arc.google:
+    class: Drupal\pendulum_arc\GoogleConnection
+    arguments: ['@state']
+  pendulum_arc.google_handoff:
+    class: Drupal\pendulum_arc\GoogleHandoff
+    arguments:
+      - '@pendulum_arc.store'
+      - '@pendulum_arc.connect'
+      - '@pendulum_arc.client'
+      - '@pendulum_arc.ids'
+  pendulum_arc.invites:
+    class: Drupal\pendulum_arc\InviteService
+    arguments:
+      - '@pendulum_arc.store'
+      - '@pendulum_arc.connect'
+      - '@pendulum_arc.client'
+      - '@entity_type.manager'
+      - '@pendulum_arc.ids'
+  pendulum_arc.keyphrase_list:
+    class: Drupal\pendulum_arc\KeyphraseList
+    arguments: ['@database', '@state']
+  pendulum_arc.keyphrase_read:
+    class: Drupal\pendulum_arc\KeyphraseRead
+    arguments: ['@entity_field.manager']
+  pendulum_arc.keyphrase_scan:
+    class: Drupal\pendulum_arc\KeyphraseScan
+    arguments:
+      - '@pendulum_arc.keyphrase_list'
+      - '@pendulum_arc.keyphrase_read'
+      - '@entity_type.manager'
+  pendulum_arc.keyphrases:
+    class: Drupal\pendulum_arc\KeyphraseSync
+    arguments:
+      - '@pendulum_arc.store'
+      - '@pendulum_arc.connect'
+      - '@pendulum_arc.client'
+      - '@pendulum_arc.keyphrase_list'
+      - '@pendulum_arc.keyphrase_scan'
+      - '@pendulum_arc.keyphrase_read'
+      - '@pendulum_arc.ids'
+      - '@config.factory'
+      - '@lock'
+      - '@pendulum_arc.profile'
+  pendulum_arc.alerts:
+    class: Drupal\pendulum_arc\Alerts
+    arguments:
+      - '@pendulum_arc.store'
+      - '@pendulum_arc.google'
+      - '@pendulum_arc.keyphrase_list'
   pendulum_arc.consent_store:
     class: Drupal\pendulum_arc\ConsentStore
     arguments:

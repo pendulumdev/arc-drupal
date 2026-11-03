@@ -11,7 +11,7 @@ use Drupal\Core\Site\Settings;
  */
 final class ArcConfig {
 
-  public const VERSION = '0.1.0';
+  public const VERSION = '0.3.0';
 
   public const CLIENT_ID = 'arc_app_drupal';
 

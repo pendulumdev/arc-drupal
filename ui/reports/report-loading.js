@@ -7,7 +7,7 @@ import { Icon } from '../ui/icon';
 /**
  * Spinner that stands in for the report content while a payload is in flight.
  */
-export function ReportLoader() {
+export function ReportLoader( { label } ) {
 	return (
 		<div className="arc-report-loader" role="status">
 			<span className="arc-report-loader__spin" aria-hidden="true">
@@ -16,7 +16,7 @@ export function ReportLoader() {
 				</Icon>
 			</span>
 			<span className="visually-hidden">
-				{ __( 'Loading report…', 'pendulum-arc' ) }
+				{ label || __( 'Loading report…', 'pendulum-arc' ) }
 			</span>
 		</div>
 	);

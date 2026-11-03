@@ -52,6 +52,11 @@ interface ArcGatewayInterface {
   public function report(string $env, string $token, string $siteId, string $service): array;
 
   /**
+   * @return array{bytes: string, type: string}
+   */
+  public function reportMedia(string $env, string $token, string $runId, string $file): array;
+
+  /**
    * @return array<string, mixed>
    */
   public function runs(string $env, string $token, string $siteId): array;
@@ -60,6 +65,59 @@ interface ArcGatewayInterface {
    * @return array<string, mixed>
    */
   public function enqueueRun(string $env, string $token, string $siteId, string $service, string $key): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function googleConnectHandoff(string $env, string $token, string $siteId, string $returnUri, string $state): array;
+
+  /**
+   * @param array<int, string> $emails
+   *
+   * @return array<string, mixed>
+   */
+  public function inviteStatus(string $env, string $token, string $projectId, array $emails): array;
+
+  /**
+   * @param array<int, string> $emails
+   *
+   * @return array<string, mixed>
+   */
+  public function createInvites(string $env, string $token, string $projectId, array $emails, string $key): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function createInvite(string $env, string $token, string $projectId, string $email, string $continuePath, string $key): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function seoTargets(string $env, string $token, string $siteId): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function startSeoTargetSync(string $env, string $token, string $siteId, string $key): array;
+
+  /**
+   * @param array{upserts: array<int, array<string, string>>, deletes: array<int, string>} $batch
+   *
+   * @return array<string, mixed>
+   */
+  public function appendSeoTargetBatch(string $env, string $token, string $siteId, string $syncId, array $batch, string $key): array;
+
+  /**
+   * @param array<string, mixed> $body
+   *
+   * @return array<string, mixed>
+   */
+  public function commitSeoTargetSync(string $env, string $token, string $siteId, string $syncId, array $body, string $key): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function abandonSeoTargetSync(string $env, string $token, string $siteId, string $syncId, string $key): array;
 
   /**
    * @return array<string, mixed>

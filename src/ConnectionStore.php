@@ -81,6 +81,7 @@ final class ConnectionStore implements ConnectionStoreInterface {
       'refreshToken' => $refresh,
       'expiresAt' => (int) ($stored['expires_at'] ?? 0),
       'siteId' => (string) $stored['site_id'],
+      'projectId' => (string) ($stored['project_id'] ?? ''),
     ];
   }
 
@@ -209,6 +210,17 @@ final class ConnectionStore implements ConnectionStoreInterface {
     ], 2 * 60);
   }
 
+  public function putGoogleState(int $userId, string $state): void {
+    $this->expirable()->setWithExpire($this->googleKey($userId), $state, 30 * 60);
+  }
+
+  public function takeGoogleState(int $userId): string {
+    $key = $this->googleKey($userId);
+    $stored = $this->expirable()->get($key);
+    $this->expirable()->delete($key);
+    return is_string($stored) ? $stored : '';
+  }
+
   public function takeNotice(int $userId): ?array {
     $key = $this->noticeKey($userId);
     $stored = $this->expirable()->get($key);
@@ -248,6 +260,10 @@ final class ConnectionStore implements ConnectionStoreInterface {
 
   private function noticeKey(int $userId): string {
     return 'notice.' . $userId;
+  }
+
+  private function googleKey(int $userId): string {
+    return 'google.' . $userId;
   }
 
   private function expirable(): KeyValueStoreExpirableInterface {

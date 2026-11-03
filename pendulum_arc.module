@@ -8,6 +8,7 @@
 declare(strict_types=1);
 
 use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
@@ -39,9 +40,54 @@ function pendulum_arc_theme($existing, $type, $theme, $path): array {
  * Implements hook_page_attachments().
  */
 function pendulum_arc_page_attachments(array &$attachments): void {
-  if (\Drupal::currentUser()->hasPermission('administer pendulum arc')) {
-    $attachments['#attached']['library'][] = 'pendulum_arc/menu';
+  if (!\Drupal::currentUser()->hasPermission('administer pendulum arc')) {
+    return;
   }
+  $attachments['#attached']['library'][] = 'pendulum_arc/menu';
+  $attachments['#attached']['drupalSettings']['pendulumArc']['menuCount'] = \Drupal::service('pendulum_arc.alerts')->menuCount();
+}
+
+/**
+ * Implements hook_cron().
+ */
+function pendulum_arc_cron(): void {
+  \Drupal::service('pendulum_arc.keyphrases')->cron();
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function pendulum_arc_entity_insert(EntityInterface $entity): void {
+  \Drupal::service('pendulum_arc.keyphrases')->refreshEntity($entity);
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function pendulum_arc_entity_update(EntityInterface $entity): void {
+  \Drupal::service('pendulum_arc.keyphrases')->refreshEntity($entity);
+}
+
+/**
+ * Implements hook_entity_predelete().
+ */
+function pendulum_arc_entity_predelete(EntityInterface $entity): void {
+  if ($entity->getEntityTypeId() === 'path_alias') {
+    return;
+  }
+  \Drupal::service('pendulum_arc.keyphrases')->forgetEntity($entity);
+}
+
+/**
+ * Implements hook_entity_delete().
+ *
+ * A removed alias is already gone, so the entity URL is read again.
+ */
+function pendulum_arc_entity_delete(EntityInterface $entity): void {
+  if ($entity->getEntityTypeId() !== 'path_alias') {
+    return;
+  }
+  \Drupal::service('pendulum_arc.keyphrases')->refreshEntity($entity);
 }
 
 /**

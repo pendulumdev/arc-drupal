@@ -14,7 +14,7 @@ Connect and score reads call the Arc API for the active environment.
 An API key is sent once, to pair or create the site, and again if you
 reconnect with the key already saved here. Arc sign-in uses the
 OAuth code flow with PKCE. The browser goes to the portal, where Arc pairs
-or creates the site, then returns to this site's Connect screen. The module
+or creates the site, then returns to this site's Settings screen. The module
 stores the token that comes back. It does not store the Arc password.
 
 ## Stored on this site

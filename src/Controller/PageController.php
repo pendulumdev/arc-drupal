@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Drupal\pendulum_arc\Controller;
 
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Access\CsrfTokenGenerator;
-use Drupal\pendulum_arc\ArcConfig;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Url;
+use Drupal\pendulum_arc\Alerts;
 use Drupal\pendulum_arc\ArcApiException;
+use Drupal\pendulum_arc\ArcConfig;
 use Drupal\pendulum_arc\ConnectService;
 use Drupal\pendulum_arc\ConnectionStoreInterface;
+use Drupal\pendulum_arc\GoogleHandoff;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +29,8 @@ final class PageController extends ControllerBase {
     private readonly ArcConfig $config,
     private readonly CsrfTokenGenerator $csrf,
     private readonly FileUrlGeneratorInterface $files,
+    private readonly GoogleHandoff $google,
+    private readonly Alerts $alerts,
   ) {}
 
   /**
@@ -39,21 +43,33 @@ final class PageController extends ControllerBase {
       $container->get('pendulum_arc.config'),
       $container->get('csrf_token'),
       $container->get('file_url_generator'),
+      $container->get('pendulum_arc.google_handoff'),
+      $container->get('pendulum_arc.alerts'),
     );
   }
 
   /**
    * Score and report screen. Sends an unconnected admin to Connect.
    */
-  public function dashboard(): array|RedirectResponse {
+  public function dashboard(Request $request): array|RedirectResponse {
     if (!$this->sodiumReady()) {
-      return $this->sodiumPage('Arc Analytics - Dashboard');
+      return $this->sodiumPage('Arc Analytics - Analytics');
     }
     if (!$this->store->isConnected()) {
       return $this->redirect('pendulum_arc.connect');
     }
+    $userId = (int) $this->currentUser()->id();
+    if ($this->google->finish(
+      $userId,
+      (string) $request->query->get('state', ''),
+      (string) $request->query->get('iss', ''),
+      (string) $request->query->get('status', ''),
+      (string) $request->query->get('error', ''),
+    )) {
+      return $this->redirect('pendulum_arc.dashboard');
+    }
     $this->connect->ensureProjectSlug();
-    return $this->page('dashboard', 'Arc Analytics - Dashboard');
+    return $this->page('dashboard', 'Arc Analytics - Analytics');
   }
 
   /**
@@ -61,7 +77,7 @@ final class PageController extends ControllerBase {
    */
   public function connect(Request $request): array|RedirectResponse {
     if (!$this->sodiumReady()) {
-      return $this->sodiumPage('Arc Analytics - Connect');
+      return $this->sodiumPage('Arc Analytics - Settings');
     }
     $code = (string) $request->query->get('code', '');
     $state = (string) $request->query->get('state', '');
@@ -70,7 +86,7 @@ final class PageController extends ControllerBase {
     if ($code !== '' || $error !== '') {
       return $this->finishOauth($code, $state, $issuer, $error);
     }
-    return $this->page('connect', 'Arc Analytics - Connect');
+    return $this->page('connect', 'Arc Analytics - Settings');
   }
 
   private function finishOauth(string $code, string $state, string $issuer, string $error): RedirectResponse {
@@ -97,14 +113,16 @@ final class PageController extends ControllerBase {
    */
   private function page(string $page, string $title): array {
     $userId = (int) $this->currentUser()->id();
+    $connectUrl = Url::fromRoute('pendulum_arc.connect')->toString();
     $bootstrap = [
       'page' => $page,
-      'notice' => $this->store->takeNotice($userId),
+      'userName' => (string) $this->currentUser()->getDisplayName(),
+      'alerts' => $this->alerts->forScreen($page, $this->store->takeNotice($userId), $connectUrl),
       'connection' => $this->store->publicView(),
       'pending' => $this->store->pendingPublic($userId),
       'urls' => [
         'dashboard' => Url::fromRoute('pendulum_arc.dashboard')->toString(),
-        'connect' => Url::fromRoute('pendulum_arc.connect')->toString(),
+        'connect' => $connectUrl,
         'portal' => $this->portalUrl(),
         'arcMark' => $this->assetUrl('arc-mark-color.svg'),
         'pendulumMark' => $this->assetUrl('pendulum-mark.svg'),

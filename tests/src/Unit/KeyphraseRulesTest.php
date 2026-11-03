@@ -34,7 +34,7 @@ final class KeyphraseRulesTest extends TestCase {
     self::assertSame('', KeyphrasePhrase::list("hello\u{FF0C}world"));
   }
 
-  public function testHashSkipsAPhraseArcDrops(): void {
+  public function testHashSkipsPhraseArcDrops(): void {
     $raw = "Saint Barth\u{2019}s \u{201C}villa\u{201D}\u{200B}";
     $hash = KeyphraseHash::of($raw, [
       ['path' => '/villa', 'phrase' => $raw],

@@ -1,7 +1,7 @@
 {
   "name": "drupal/pendulum_arc",
   "description": "Connect a Drupal site to a Pendulum Arc account.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "drupal-module",
   "license": "GPL-2.0-or-later",
   "require": {

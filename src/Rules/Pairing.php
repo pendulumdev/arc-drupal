@@ -696,6 +696,7 @@ final class Pairing {
     }
     return $blocks;
   }
+
   /**
    * @param array<string, mixed> $block
    *   Table block.
